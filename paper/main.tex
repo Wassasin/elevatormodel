@@ -1,0 +1,101 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[british]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{url}
+\usepackage[a4paper]{geometry}
+
+\usepackage{listings}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage{float}
+\usepackage{xspace}
+\usepackage{enumerate}
+
+% Math packages
+\usepackage[sc]{mathpazo}
+\usepackage{amsthm}
+\usepackage{algorithmic}
+\usepackage{amsmath}
+
+\lstset{basicstyle=\footnotesize}
+
+% Document properties
+\title{Modelling and Analysis of an Elevator System with NuSMV2}
+\author{
+	Wouter Geraedts \\ \small{\texttt{w.geraedts@student.ru.nl}} \and
+	Ko Stoffelen     \\ \small{\texttt{kostoffelen@student.ru.nl}}
+}
+\date{tbd}
+\linespread{1.05}
+
+% Terminology
+\newcommand{\NuSMV}{NuSMV2\xspace}
+
+% Math
+\newcommand{\LTLG}{\mathbf{G~}}
+\newcommand{\LTLF}{\mathbf{F~}}
+\newcommand{\LTLX}{\mathbf{X~}}
+\newcommand{\LTLU}{\mathbf{~U~}}
+\newcommand{\disjall}[1]{\mathop{\bigvee}\limits_{i=0}^{#1}}
+\newcommand{\conjall}[2]{\mathop{\bigwedge}\limits_{#1}^{#2}}
+\newcommand{\dooropen}[1]{\mathsf{door\_open}(#1)}
+\newcommand{\cabinat}[1]{\mathsf{cabin\_at}(#1)}
+\newcommand{\requested}[1]{\mathsf{requested}(#1)}
+\newcommand{\served}[1]{\mathsf{served}(#1)}
+\newcommand{\imply}{\rightarrow}
+
+\begin{document}
+	\maketitle
+
+
+	\section{Introduction}
+
+	% Baier & katoen 5.5
+	% LTL
+	
+	\section{Problem 1}
+	
+	\quote{Work out the solution to Exercise 5.5 of Baier \& Katoen (page 302/303)}
+	
+	\begin{enumerate}[(a)]
+		\item
+			The doors are ``safe'', i.e., a floor door is never open if the elevator is not present at the given floor.
+			
+			\[
+				\LTLG \neg \left( \conjall{i=0}{N-1} \dooropen{i} \wedge \neg \cabinat{i} \right)
+			\]
+		
+		\item
+			A requested floor will be served sometime.
+			
+			\begin{align*}
+				\served{x} := \cabinat{x} \wedge \dooropen{x} \\
+				\LTLG \conjall{i=0}{N-1} \requested{i} \imply \LTLF \served{i}
+			\end{align*}
+		
+		\item
+			Again and again the elevator returns to floor 0.
+			
+			\[
+				\LTLG \LTLF \cabinat{0}
+			\]
+		
+		\item
+			When the top floor is requested, the elevator serves it immediately and does not stop on the way there.
+			
+			\[
+				\LTLG \requested{N-1} \imply
+					\left(
+						\conjall{i=0}{N-2}
+							\neg \dooropen{i} \wedge ( \cabinat{i} \imply \LTLX \cabinat{i+1} )
+					\right)
+					\LTLU
+					\served{N-1}
+			\]
+	\end{enumerate}
+
+	\bibliographystyle{plain}
+	\bibliography{main}
+
+\end{document}
