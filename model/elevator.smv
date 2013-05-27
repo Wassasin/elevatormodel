@@ -7,6 +7,8 @@ MODULE elevator
 		init(target) := -1;
 	DEFINE
 		has_target := target != -1;
+		met_target := cabin_at = target;
+		may_change_target := met_target | !has_target;
 		
 MODULE user(init_user_at)
 	VAR
@@ -42,19 +44,19 @@ MODULE controller
 		f3 : floor(3);
 	ASSIGN
 		next(f0.door_open) := case
-			f0.floor = e.target & target_met : TRUE;
+			f0.floor = e.target & e.met_target : TRUE;
 			TRUE : FALSE;
 		esac;
 		next(f1.door_open) := case
-			f1.floor = e.target & target_met : TRUE;
+			f1.floor = e.target & e.met_target : TRUE;
 			TRUE : FALSE;
 		esac;
 		next(f2.door_open) := case
-			f2.floor = e.target & target_met : TRUE;
+			f2.floor = e.target & e.met_target : TRUE;
 			TRUE : FALSE;
 		esac;
 		next(f3.door_open) := case
-			f3.floor = e.target & target_met : TRUE;
+			f3.floor = e.target & e.met_target : TRUE;
 			TRUE : FALSE;
 		esac;
 		
@@ -65,14 +67,14 @@ MODULE controller
 		esac;
 		
 		next(e.target) := case
-			target_met & u0.state = in_elevator : u0.wants_to;
-			target_met & u1.state = in_elevator : u1.wants_to;
-			target_met & u2.state = in_elevator : u2.wants_to;
-			target_met & cabin_empty & u0.state = request : u0.user_at;
-			target_met & cabin_empty & u1.state = request : u1.user_at;
-			target_met & cabin_empty & u2.state = request : u2.user_at;
-			target_met & cabin_empty & no_requests & e.cabin_at != 0 : 0;
-			target_met & cabin_empty & no_requests & e.cabin_at = 0 : -1;
+			e.may_change_target & u0.state = in_elevator : u0.wants_to;
+			e.may_change_target & u1.state = in_elevator : u1.wants_to;
+			e.may_change_target & u2.state = in_elevator : u2.wants_to;
+			e.may_change_target & cabin_empty & u0.state = request : u0.user_at;
+			e.may_change_target & cabin_empty & u1.state = request : u1.user_at;
+			e.may_change_target & cabin_empty & u2.state = request : u2.user_at;
+			e.may_change_target & cabin_empty & no_requests & e.cabin_at != 0 : 0;
+			e.may_change_target & cabin_empty & no_requests & e.cabin_at = 0 : -1;
 			TRUE : e.target;
 		esac;
 		
@@ -122,8 +124,6 @@ MODULE controller
 			u2.state != in_elevator
 		);
 		
-		target_met := e.cabin_at = e.target;
-		
 		no_requests := (
 			u0.state != request & 
 			u1.state != request & 
@@ -154,4 +154,9 @@ MODULE controller
 MODULE main
 	VAR
 		c : controller;
-		LTLSPEC G F c.e.cabin_at = 0
+		LTLSPEC G !(c.f0.door_open & c.e.cabin_at != 0)
+		LTLSPEC G !(c.f1.door_open & c.e.cabin_at != 1)
+		LTLSPEC G !(c.f2.door_open & c.e.cabin_at != 2)
+		LTLSPEC G !(c.f3.door_open & c.e.cabin_at != 3)
+--		LTLSPEC G F c.e.cabin_at = 0
+		LTLSPEC G ((c.u0.state = request & c.u0.wants_to = 1) -> F (c.e.cabin_at = 1 & c.f1.door_open))
