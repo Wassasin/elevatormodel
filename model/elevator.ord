@@ -1,0 +1,12 @@
+c.e.target
+c.e.cabin_at
+c.u0.wants_to
+c.u0.user_at
+c.u1.wants_to
+c.u1.user_at
+c.u0.state
+c.u1.state
+c.f0.door_open
+c.f1.door_open
+c.f2.door_open
+c.f3.door_open

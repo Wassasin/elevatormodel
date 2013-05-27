@@ -10,7 +10,7 @@ MODULE elevator
 		met_target := cabin_at = target;
 		may_change_target := met_target | !has_target;
 		
-MODULE user(init_user_at)
+MODULE user()
 	VAR
 		state : {idle, request, in_elevator};
 		wants_to : 0..3;
@@ -20,6 +20,7 @@ MODULE user(init_user_at)
 		init(user_at) := 0..3;
 		init(state) := idle;
 		next(wants_to) := case
+-- is _NOT_ part of the assignment
 --			wants_to = user_at & state = idle : 0..3;
 			TRUE : wants_to;
 		esac;
@@ -35,26 +36,30 @@ MODULE floor(i)
 MODULE controller
 	VAR
 		e : elevator;
-		u0 : user(0);
-		u1 : user(1);
-		u2 : user(2);
+		u0 : user();
+		u1 : user();
 		f0 : floor(0);
 		f1 : floor(1);
 		f2 : floor(2);
 		f3 : floor(3);
 	ASSIGN
+
+
 		next(f0.door_open) := case
 			f0.floor = e.target & e.met_target : TRUE;
 			TRUE : FALSE;
 		esac;
+
 		next(f1.door_open) := case
 			f1.floor = e.target & e.met_target : TRUE;
 			TRUE : FALSE;
 		esac;
+
 		next(f2.door_open) := case
 			f2.floor = e.target & e.met_target : TRUE;
 			TRUE : FALSE;
 		esac;
+
 		next(f3.door_open) := case
 			f3.floor = e.target & e.met_target : TRUE;
 			TRUE : FALSE;
@@ -69,45 +74,37 @@ MODULE controller
 		next(e.target) := case
 			e.may_change_target & u0.state = in_elevator : u0.wants_to;
 			e.may_change_target & u1.state = in_elevator : u1.wants_to;
-			e.may_change_target & u2.state = in_elevator : u2.wants_to;
 			e.may_change_target & cabin_empty & u0.state = request : u0.user_at;
 			e.may_change_target & cabin_empty & u1.state = request : u1.user_at;
-			e.may_change_target & cabin_empty & u2.state = request : u2.user_at;
 			e.may_change_target & cabin_empty & no_requests & e.cabin_at != 0 : 0;
 			e.may_change_target & cabin_empty & no_requests & e.cabin_at = 0 : -1;
 			TRUE : e.target;
 		esac;
-		
+
+
 		next(u0.state) := case
 			u0.state = request & u0_door_open : in_elevator;
 			u0.state = in_elevator & u0.wants_to = u0.user_at & u0_door_open : idle;
 			u0.state = idle & u0.user_at != u0.wants_to : request;
 			TRUE : u0.state;
 		esac;
+
 		next(u1.state) := case
 			u1.state = request & u1_door_open : in_elevator;
 			u1.state = in_elevator & u1.wants_to = u1.user_at & u1_door_open : idle;
 			u1.state = idle & u1.user_at != u1.wants_to : request;
 			TRUE : u1.state;
 		esac;
-		next(u2.state) := case
-			u2.state = request & u2_door_open : in_elevator;
-			u2.state = in_elevator & u2.wants_to = u2.user_at & u2_door_open : idle;
-			u2.state = idle & u2.user_at != u2.wants_to : request;
-			TRUE : u2.state;
-		esac;
-		
+
+
 		next(u0.user_at) := case
 			u0.state = in_elevator : e.cabin_at;
 			TRUE : u0.user_at;
 		esac;
+
 		next(u1.user_at) := case
 			u1.state = in_elevator : e.cabin_at;
 			TRUE : u1.user_at;
-		esac;
-		next(u2.user_at) := case
-			u2.state = in_elevator : e.cabin_at;
-			TRUE : u2.user_at;
 		esac;
 
 	DEFINE
@@ -120,14 +117,12 @@ MODULE controller
 		
 		cabin_empty := (
 			u0.state != in_elevator &
-			u1.state != in_elevator &
-			u2.state != in_elevator
+			u1.state != in_elevator
 		);
 		
 		no_requests := (
-			u0.state != request & 
-			u1.state != request & 
-			u2.state != request
+			u0.state != request &
+			u1.state != request
 		);
 		
 		u0_door_open := (
@@ -136,27 +131,45 @@ MODULE controller
 			(u0.user_at = f2.floor -> f2.door_open) &
 			(u0.user_at = f3.floor -> f3.door_open)
 		);
-		
 		u1_door_open := (
 			(u1.user_at = f0.floor -> f0.door_open) &
 			(u1.user_at = f1.floor -> f1.door_open) &
 			(u1.user_at = f2.floor -> f2.door_open) &
 			(u1.user_at = f3.floor -> f3.door_open)
 		);
-		
-		u2_door_open := (
-			(u2.user_at = f0.floor -> f0.door_open) &
-			(u2.user_at = f1.floor -> f1.door_open) &
-			(u2.user_at = f2.floor -> f2.door_open) &
-			(u2.user_at = f3.floor -> f3.door_open)
-		);
 
 MODULE main
 	VAR
 		c : controller;
+		-- The doors are safe
 		LTLSPEC G !(c.f0.door_open & c.e.cabin_at != 0)
 		LTLSPEC G !(c.f1.door_open & c.e.cabin_at != 1)
 		LTLSPEC G !(c.f2.door_open & c.e.cabin_at != 2)
 		LTLSPEC G !(c.f3.door_open & c.e.cabin_at != 3)
-		LTLSPEC G F c.e.cabin_at = 0
+		-- A requested floor will be served sometime.
+		LTLSPEC G ((c.u0.state = request & c.u0.wants_to = 0) -> F (c.e.cabin_at = 0 & c.f0.door_open))
 		LTLSPEC G ((c.u0.state = request & c.u0.wants_to = 1) -> F (c.e.cabin_at = 1 & c.f1.door_open))
+		LTLSPEC G ((c.u0.state = request & c.u0.wants_to = 2) -> F (c.e.cabin_at = 2 & c.f2.door_open))
+		LTLSPEC G ((c.u0.state = request & c.u0.wants_to = 3) -> F (c.e.cabin_at = 3 & c.f3.door_open))
+		LTLSPEC G ((c.u1.state = request & c.u1.wants_to = 0) -> F (c.e.cabin_at = 0 & c.f0.door_open))
+		LTLSPEC G ((c.u1.state = request & c.u1.wants_to = 1) -> F (c.e.cabin_at = 1 & c.f1.door_open))
+		LTLSPEC G ((c.u1.state = request & c.u1.wants_to = 2) -> F (c.e.cabin_at = 2 & c.f2.door_open))
+		LTLSPEC G ((c.u1.state = request & c.u1.wants_to = 3) -> F (c.e.cabin_at = 3 & c.f3.door_open))
+		-- Again and again the elevator returns to floor 0.
+		LTLSPEC G F c.e.cabin_at = 0
+		-- Law of nature.
+		LTLSPEC G c.e.cabin_at = 0 -> X (c.e.cabin_at = 0 | c.e.cabin_at = 1)
+		LTLSPEC G c.e.cabin_at = 1 -> X (c.e.cabin_at = 0 | c.e.cabin_at = 1 | c.e.cabin_at = 2)
+		LTLSPEC G c.e.cabin_at = 2 -> X (c.e.cabin_at = 1 | c.e.cabin_at = 2 | c.e.cabin_at = 3)
+		LTLSPEC G c.e.cabin_at = 3 -> X (c.e.cabin_at = 2 | c.e.cabin_at = 3)
+		-- You can't get stuck inside.
+		LTLSPEC G c.u0.state = in_elevator -> F c.u0.state = idle
+		LTLSPEC G c.u1.state = in_elevator -> F c.u1.state = idle
+		-- The doors will eventually close
+		LTLSPEC G c.f0.door_open -> F !c.f0.door_open
+		LTLSPEC G c.f1.door_open -> F !c.f1.door_open
+		LTLSPEC G c.f2.door_open -> F !c.f2.door_open
+		LTLSPEC G c.f3.door_open -> F !c.f3.door_open
+		-- An occupant has requested the elevator previously
+		LTLSPEC G c.u0.state = in_elevator -> O c.u0.state = request
+		LTLSPEC G c.u1.state = in_elevator -> O c.u1.state = request

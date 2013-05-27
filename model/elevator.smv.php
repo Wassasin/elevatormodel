@@ -1,5 +1,5 @@
 <?php
-	$num_users = 3;
+	$num_users = 2;
 	$num_floors = 4;
 ?>
 MODULE elevator
@@ -24,7 +24,7 @@ MODULE user()
 		init(user_at) := 0..<?= $num_floors-1 ?>;
 		init(state) := idle;
 		next(wants_to) := case
--- too difficult to calculate
+-- is _NOT_ part of the assignment
 --			wants_to = user_at & state = idle : 0..<?= $num_floors-1 ?>;
 			TRUE : wants_to;
 		esac;
@@ -163,13 +163,47 @@ for($i = 0; $i < $num_users; ++$i)
 MODULE main
 	VAR
 		c : controller;
+		-- The doors are safe
 <?php
 for($i = 0; $i < $num_floors; ++$i)
 	echo("		LTLSPEC G !(c.f$i.door_open & c.e.cabin_at != $i)\n");
 ?>
-		LTLSPEC G F c.e.cabin_at = 0
+		-- A requested floor will be served sometime.
 <?php
 for($i = 0; $i < $num_users; ++$i)
 	for($j = 0; $j < $num_floors; ++$j)
 		echo("		LTLSPEC G ((c.u$i.state = request & c.u$i.wants_to = $j) -> F (c.e.cabin_at = $j & c.f$j.door_open))\n");
+?>
+		-- Again and again the elevator returns to floor 0.
+		LTLSPEC G F c.e.cabin_at = 0
+		-- Law of nature.
+<?php
+for($i = 0; $i < $num_floors; ++$i)
+{
+	echo("		LTLSPEC G c.e.cabin_at = $i -> X (");
+	for($j = $i-1; $j <= $i+1; ++$j)
+		if($j >= 0 && $j < $num_floors)
+		{
+			echo("c.e.cabin_at = $j");
+			
+			if($j < $i+1 && $j < $num_floors-1)
+				echo(" | ");
+		}
+	echo(")\n");
+}
+?>
+		-- You can't get stuck inside.
+<?php
+for($i = 0; $i < $num_users; ++$i)
+	echo("		LTLSPEC G c.u$i.state = in_elevator -> F c.u$i.state = idle\n");
+?>
+		-- The doors will eventually close
+<?php
+for($i = 0; $i < $num_floors; ++$i)
+	echo("		LTLSPEC G c.f$i.door_open -> F !c.f$i.door_open\n");
+?>
+		-- An occupant has requested the elevator previously
+<?php
+for($i = 0; $i < $num_users; ++$i)
+	echo("		LTLSPEC G c.u$i.state = in_elevator -> O c.u$i.state = request\n");
 ?>
