@@ -17,10 +17,10 @@ MODULE user(init_user_at)
 		user_at : 0..3;
 	ASSIGN
 		init(wants_to) := 0..3;
-		init(user_at) := init_user_at;
+		init(user_at) := 0..3;
 		init(state) := idle;
 		next(wants_to) := case
-			wants_to = user_at & state = idle : 0..3;
+--			wants_to = user_at & state = idle : 0..3;
 			TRUE : wants_to;
 		esac;
 
@@ -158,5 +158,5 @@ MODULE main
 		LTLSPEC G !(c.f1.door_open & c.e.cabin_at != 1)
 		LTLSPEC G !(c.f2.door_open & c.e.cabin_at != 2)
 		LTLSPEC G !(c.f3.door_open & c.e.cabin_at != 3)
---		LTLSPEC G F c.e.cabin_at = 0
+		LTLSPEC G F c.e.cabin_at = 0
 		LTLSPEC G ((c.u0.state = request & c.u0.wants_to = 1) -> F (c.e.cabin_at = 1 & c.f1.door_open))
