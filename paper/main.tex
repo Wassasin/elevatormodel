@@ -37,12 +37,17 @@
 \newcommand{\LTLF}{\mathbf{F~}}
 \newcommand{\LTLX}{\mathbf{X~}}
 \newcommand{\LTLU}{\mathbf{~U~}}
-\newcommand{\disjall}[1]{\mathop{\bigvee}\limits_{i=0}^{#1}}
+\newcommand{\LTLO}{\mathbf{O~}}
+\newcommand{\LTLY}{\mathbf{Y~}}
+\newcommand{\LTLH}{\mathbf{H~}}
+\newcommand{\disjall}[2]{\mathop{\bigvee}\limits_{#1}^{#2}}
 \newcommand{\conjall}[2]{\mathop{\bigwedge}\limits_{#1}^{#2}}
 \newcommand{\dooropen}[1]{\mathsf{door\_open}(#1)}
 \newcommand{\cabinat}[1]{\mathsf{cabin\_at}(#1)}
 \newcommand{\requested}[1]{\mathsf{requested}(#1)}
 \newcommand{\served}[1]{\mathsf{served}(#1)}
+\newcommand{\target}[1]{\mathsf{target}(#1)}
+\newcommand{\state}[1]{\mathsf{state}(\mathsf{#1})}
 \newcommand{\imply}{\rightarrow}
 
 \begin{document}
@@ -56,7 +61,18 @@
 	
 	\section{Problem 1}
 	
-	\quote{Work out the solution to Exercise 5.5 of Baier \& Katoen (page 302/303)}
+	\begin{quote}
+		Work out the solution to Exercise 5.5 of Baier \& Katoen (page 302/303).
+	\end{quote}
+	
+	We use the following propositions:
+	\begin{itemize}
+		\item \(\dooropen{i}\): true iff the floor door at floor number \(i\) is open.
+		\item \(\cabinat{i}\): true iff the elevator cabin is currently at floor number \(i\).
+		\item \(\requested{i}\): true iff the request button has been pressed at floor number \(i\) and the elevator cabin has not served that floor since that moment.
+		\item \(\target{i}\): true iff the elevator has a current floor target equal to \(i\).
+		\item \(\state{s}\): true iff a user for which the property is stated has a current state equal to \(s\). Possible values for \(s\) are idle, in\_elevator and request.
+	\end{itemize}
 	
 	\begin{enumerate}[(a)]
 		\item
@@ -71,7 +87,7 @@
 			
 			\begin{align*}
 				\served{x} := \cabinat{x} \wedge \dooropen{x} \\
-				\LTLG \conjall{i=0}{N-1} \requested{i} \imply \LTLF \served{i}
+				\LTLG \left( \conjall{i=0}{N-1} \requested{i} \imply \LTLF \served{i} \right)
 			\end{align*}
 		
 		\item
@@ -94,10 +110,76 @@
 					\served{N-1}
 			\]
 	\end{enumerate}
-
-	% Problem 2: zie het bestand
-	% Problem 3: valideert, mits wants_to niet gezet, want #argumentatie; we hebben een paar extra properties in PHP
-	% Problem 4: volledig afhankelijk van of verschillende aantal users de bedoeling is; evenals wants_to; vragen we donderdag aan Frits
+	
+	\section{Problem 2}
+	
+	\begin{quote}
+		Construct a model of an elevator system that services 4 floors. Your model should contain separate modules for the elevator, the controller, and the users of the elevator.
+	\end{quote}
+	
+	Our NuSMV2 model consists of four modules, which we will explain here. The elevator module contains two variables. \texttt{cabin\_at} is rather self-explanatory, but \texttt{target} can also have the value -1 if no target has been set yet. The module only defines initial values and some macros.
+	
+	A user starts at a random floor and his goal is also a random floor. By uncommenting \texttt{wants\_to = user\_at \& state = idle : 0..3;}, it is possible to let a user behave in such a way that he continuously wants to go to a new floor. Otherwise, a user remains in the \texttt{idle} state when his goal has been achieved.
+	
+	The floor module models a floor door. The elevator itself does not have a door. A floor door is modeled as a single boolean variable.
+	
+	The controller is the most interesting module, as it contains nearly all transitions. A floor door opens when the floor number is equal to the elevator location and its target. Otherwise, it is closed. The elevator cabin moves when the door at its current location is closed and his target is above or below his current location. The elevator target can only change when no target is set or the current target has been met. If there is a user in the elevator, his goal becomes the new target. If the cabin is empty, but a user has pressed a button somewhere, the elevator chooses that location as the new target. Otherwise the cabin returns to floor number zero, in order to satisfy property (c) in Problem 1. If the elevator is already there, the target changes to -1.
+	
+	A user reaches the \texttt{in\_elevator} state when he has requested the elevator and the door at his floor is open. His state returns to \texttt{idle} when he is in the elevator, the cabin is at his goal floor and the door at that floor is open. Finally a user issues a request when he is idle and he wants to go to a different floor than where he currently is. The location of a user changes only when a user is in the elevator. His location is then set to the location of the elevator cabin.
+	
+	Some macros are defined to increase the readability of the model. It can be seen that transition rules often have to be defined for each user or floor seperately. We have not found a way to express this more conveniently, so we ended up with writing a simple script that generates NuSMV models for a variable number of users and floors.
+	
+	\section{Problem 3}
+	
+	\begin{quote}
+		Establish that the model of Problem 2 satisfies the LTL formulae of Problem 1. Are there other relevant correctness properties for the model that can be stated in LTL and that hold for your model?
+	\end{quote}
+	
+	All formulae are indeed satisfied. Some other properties that hold for our model are stated below.
+	
+	\begin{itemize}
+		\item
+			``Law of nature'': the elevator only moves to an adjoining floor.
+			
+			\[
+				\LTLG \left( \conjall{i=0}{N-1} \cabinat{i} \imply \LTLX \left( \disjall{j=\textrm{max}(0, i-1)}{\textrm{min}(3, i+1)} \cabinat{j} \right) \right)
+			\]
+		
+		\item
+			A user can't get stuck in the elevator.
+			
+			\[
+				\LTLG \state{in\_elevator} \imply \LTLF \state{idle}
+			\]
+		
+		\item
+			The elevator doors won't remain open forever.
+			
+			\[
+				\LTLG \left( \conjall{i=0}{N-1} \dooropen{i} \imply \LTLF \neg \dooropen{i} \right)
+			\]
+	\end{itemize}
+	
+	\section{Problem 4}
+	
+	\begin{quote}
+		Explore what happens to the model checking computation times and the size of the model when you increase the number of floors. What is the largest number of floors NuSMV2 can handle?
+	\end{quote}
+	
+	% TODO
+	
+	\section{Problem 5}
+	
+	\begin{quote}
+		Is it possible to speed up the verification times by changing the variable ordering of the BDD?
+	\end{quote}
+	
+	We have done some experiments where the number of users and elevators remained constant: two users and four floors. NuSMV2's \texttt{-i} option lets one supply a file with the variable ordering. If this flag is omitted, the tool uses heuristics to construct its own variable order. We first took a look at the heuristic based variable order, which can be outputted using the \texttt{-o} option. See \texttt{elevator\_heuristic.ord}. This default test ran in about 1.5 seconds. We then supplied some custom orderings with only one variable, to determine which variable would be the best to branch on first. For example, \texttt{c.u0.wants\_to} ended up in 4.1 seconds, \texttt{c.u0.user\_at} in 4.5 seconds and \texttt{c.e.cabin\_at} in 2.7 seconds. None of the tests were close to the heuristic based ordering, so we tried a different approach. We modified the heuristic based variable order in such a way that we `grouped' the booleans that correspond with a single variable. In other words, we removed the \texttt{.x} at the end of most lines and only kept the top appearance of a variable. \texttt{elevator\_fast.ord} resulted in an average running time of 0.8 seconds, which is significantly better. It turns out that it is best to branch on the \texttt{c.e.target} variable first.
+	
+	In general we conclude that it is better to branch first on variables with a greater domain (more branches) and that play a more dominant role with regard to the system behaviour. The behaviour of a floor door for example, directly follows from other variables and it does not influence others. It can also attain only two values. This results in a low place in the optimal ordering. The elevator target however, can take five values and it influences the location of the elevator and of users in the elevator.
+	
+	Something remarkable we found out is that supplying an empty file with the \texttt{-i} option results in a running time of about 3.5 seconds and a variable ordering that does not really make a lot of sense. It looks somewhat systematically generated, but not entirely. An outright weird thing is that supplying an empty file with the \texttt{-t} option, which determines the variable ordering for clustering, always significantly speeds up the tool. By using this `hack', we were able to validate our properties in settings with lots of floors, where it would otherwise have taken hours.
+	
 	% Problem 5: variable ordening
 	%	Note: -t -legefile- is extreem veel sneller
 	%	Default: (2u, 4f)
@@ -107,8 +189,52 @@
 	%	c.u0.user_at: 4.5s
 	%	c.e.cabin_at: 2.7s
 	%	Zie files, hilarisch
-	% Problem 6: have one past temporal operator predicate, need more
+	
+	\section{Problem 6}
+	
+	\begin{quote}
+		NuSMV2 also supports past temporal operators. Formulate some correctness properties for the elevator system using these operators and check that they hold for the model.
+	\end{quote}
+	
+	The following properties have all succesfully been verified.
+	
+	\begin{itemize}
+		\item
+			An occupant has requested the elevator previously.
+		
+			\[
+				\LTLG \state{in\_elevator} \imply \LTLO \state{request}
+			\]
+		
+		\item
+			The target only leaves -1 if there has been done a request in the previous state.
+			
+			\[
+				\LTLG (\neg \target{-1}) \imply \LTLY (\neg \target{-1} \vee \state{request})
+			\]
+		
+		\item
+			The doors have been safe up to now.
+			
+			\[
+				\LTLH \neg \left( \conjall{i=0}{N-1} \dooropen{i} \wedge \neg \cabinat{i} \right)
+			\]
+	\end{itemize}
+	
+	\section{Problem 7}
+	
+	\begin{quote}
+		Explore the use of Bounded Model Checking. How do the computation times compare to the computation times with BDDs?
+	\end{quote}
+
 	% Problem 7: met hoog genoeg aantal users / floors is het zinvol met (10 stappen) * aantal users (ofzo)
+	
+	The first thing we notice when applying the \texttt{-bmc} option is that NuSMV2 returns two warnings. It complains it cannot assign the values of -1 and 4 to variable \texttt{c.e.cabin\_at}. For 4, it is easiest to prove that this can not happen at all and it is thus probably a bug in NuSMV2. Assume 4 is assigned to \texttt{c.e.cabin\_at}. This value can only be increased from 3 to 4 if \(\texttt{c.e.target} > \texttt{g.e.cabin\_at}\), which means \(\texttt{c.e.target} \ge 4\), which is a contradiction with the domain of the variable.
+	
+	Anyway, it turns out to be hard to determine a suitable maximum bound. One might argue that all interesting cases have probably been explored when all users have traveled to their destinations. This would result in an upper bound of approximately \((2 \times \textrm{number of floors} + 4) \times \textrm{number of users}\). This roughly describes a worst-case scenario where the elevator has to go all the way up to fetch a user and all the way down to reach his destination. The constant factor is due to the delay in opening of doors and changing of the elevator target.
+	
+	Using this bound, BMC is significantly slower, although of course the algorithm can stop earlier once it has found a counterexample for some property. It is exactly as has been stated before: BMC can be useful if one is looking for counterexamples in settings with lots of users and floors, but for exhaustive search a BDD is the better choice.
+
 
 	\bibliographystyle{plain}
 	\bibliography{main}
