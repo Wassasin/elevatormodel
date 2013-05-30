@@ -11,6 +11,7 @@
 \usepackage{float}
 \usepackage{xspace}
 \usepackage{enumerate}
+\usepackage{diagbox}
 
 % Math packages
 \usepackage[sc]{mathpazo}
@@ -166,7 +167,47 @@
 		Explore what happens to the model checking computation times and the size of the model when you increase the number of floors. What is the largest number of floors NuSMV2 can handle?
 	\end{quote}
 	
-	% TODO
+	\begin{figure}[H]
+		\begin{center}
+			\begin{tabular}{r|r|r|r|r}
+				\backslashbox{$F$}{$n$} & 1 & 2 & 3 & 4 \\ \hline
+				2	& 0.028		& 0.053		& 0.220		& 10.151	\\ \hline
+				3	& 0.041		& 0.345		& 83.652	&			\\ \hline
+				4	& 0.072		& 1.465		&			&			\\ \hline
+				5	& 0.142		& 18.114	&			&			\\ \hline
+				6	& 0.203		& 56.642	&			&			\\ \hline 
+				7	& 0.270		& 204.439	&			&			\\ \hline
+				8	& 0.680		&			&			&			\\ \hline
+				9	& 0.720		&			&			&			\\ \hline
+				10	& 0.970		&			&			&			\\ \hline
+				20	& 31.313	&			&			&			\\ \hline
+				30	& 56.174	&			&			&			\\ \hline
+				40	& 57.226	&			&			&			\\ \hline
+				50	& 99.425	&			&			&			\\ \hline
+			\end{tabular}
+		\end{center}
+		
+		\caption{Computation time without \texttt{wants\_to}-feature}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\begin{center}
+			\begin{tabular}{r|r|r|r}
+				\backslashbox{$F$}{$n$} & 1 & 2 & 3 \\ \hline
+				2	& 0.032		& 0.132		& 2.711		\\ \hline
+				3	& 0.065		& 4.684		&			\\ \hline
+				4	& 0.149		&			&			\\ \hline
+				5	& 0.627		&			&			\\ \hline
+				6	& 1.285		&			&			\\ \hline 
+				7	& 2.211		&			&			\\ \hline
+				8	& 3.785		&			&			\\ \hline
+				9	& 8.862		&			&			\\ \hline
+				10	& 42.684	&			&			\\ \hline
+			\end{tabular}
+		\end{center}
+		
+		\caption{Computation time with \texttt{wants\_to}-feature}
+	\end{figure}
 	
 	\section{Problem 5}
 	
@@ -179,6 +220,48 @@
 	In general we conclude that it is better to branch first on variables with a greater domain (more branches) and that play a more dominant role with regard to the system behaviour. The behaviour of a floor door for example, directly follows from other variables and it does not influence others. It can also attain only two values. This results in a low place in the optimal ordering. The elevator target however, can take five values and it influences the location of the elevator and of users in the elevator.
 	
 	Something remarkable we found out is that supplying an empty file with the \texttt{-i} option results in a running time of about 3.5 seconds and a variable ordering that does not really make a lot of sense. It looks somewhat systematically generated, but not entirely. An outright weird thing is that supplying an empty file with the \texttt{-t} option, which determines the variable ordering for clustering, always significantly speeds up the tool. By using this `hack', we were able to validate our properties in settings with lots of floors, where it would otherwise have taken hours.
+	
+	\begin{figure}[H]
+		\begin{center}
+			\begin{tabular}{r|r|r|r|r|r}
+				\backslashbox{$F$}{$n$} & 1 & 2 & 3 & 4 & 5 \\ \hline
+				2	& 0.030		& 0.046		& 0.114		& 0.424		& 2.376	\\ \hline
+				3	& 0.039		& 0.209		& 2.535		& 53.188	&		\\ \hline
+				4	& 0.062		& 0.700		& 15.765	&			&		\\ \hline
+				5	& 0.105		& 2.333		&			&			&		\\ \hline
+				6	& 0.146		& 4.973		&			&			&		\\ \hline 
+				7	& 0.196		& 8.727		&			&			&		\\ \hline
+				8	& 0.282		& 14.581	&			&			&		\\ \hline
+				9	& 0.427		& 53.658	&			&			&		\\ \hline
+				10	& 0.558		& 107.473	&			&			&		\\ \hline
+				20	& 2.456		&			&			&			&		\\ \hline
+				30	& 8.110		&			&			&			&		\\ \hline
+				40	& 19.068	&			&			&			&		\\ \hline
+				50	& 63.694	&			&			&			&		\\ \hline
+			\end{tabular}
+		\end{center}
+		
+		\caption{Computation time using \texttt{-t} on empty file without \texttt{wants\_to}-feature}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\begin{center}
+			\begin{tabular}{r|r|r|r|r|r}
+				\backslashbox{$F$}{$n$} & 1 & 2 & 3 & 4 & 5 \\ \hline
+				2	& 0.034		& 0.133		& 0.974		& 8.253		& 115.457	\\ \hline
+				3	& 0.066		& 4.528		& 			& 			&			\\ \hline
+				4	& 0.178		& 59.415	& 			&			&			\\ \hline
+				5	& 0.574		&			&			&			&			\\ \hline
+				6	& 1.225		&			&			&			&			\\ \hline 
+				7	& 2.164		&			&			&			&			\\ \hline
+				8	& 3.830		&			&			&			&			\\ \hline
+				9	& 8.426		&			&			&			&			\\ \hline
+				10	& 14.296	&			&			&			&			\\ \hline
+			\end{tabular}
+		\end{center}
+		
+		\caption{Computation time using \texttt{-t} on empty file with \texttt{wants\_to}-feature}
+	\end{figure}
 	
 	% Problem 5: variable ordening
 	%	Note: -t -legefile- is extreem veel sneller
@@ -234,9 +317,4 @@
 	Anyway, it turns out to be hard to determine a suitable maximum bound. One might argue that all interesting cases have probably been explored when all users have traveled to their destinations. This would result in an upper bound of approximately \((2 \times \textrm{number of floors} + 4) \times \textrm{number of users}\). This roughly describes a worst-case scenario where the elevator has to go all the way up to fetch a user and all the way down to reach his destination. The constant factor is due to the delay in opening of doors and changing of the elevator target.
 	
 	Using this bound, BMC is significantly slower, although of course the algorithm can stop earlier once it has found a counterexample for some property. It is exactly as has been stated before: BMC can be useful if one is looking for counterexamples in settings with lots of users and floors, but for exhaustive search a BDD is the better choice.
-
-
-	\bibliographystyle{plain}
-	\bibliography{main}
-
 \end{document}
