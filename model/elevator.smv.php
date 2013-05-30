@@ -1,6 +1,14 @@
 <?php
-	$num_users = 2;
-	$num_floors = 4;
+	if(count($argv) == 3)
+	{
+		$num_users = (int)$argv[1];
+		$num_floors = (int)$argv[2];
+	}
+	else
+	{
+		$num_users = 2;
+		$num_floors = 4;
+	}
 ?>
 MODULE elevator
 	VAR
