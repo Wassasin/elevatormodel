@@ -14,7 +14,7 @@ MODULE elevator
 		met_target := cabin_at = target;
 		may_change_target := met_target | !has_target;
 		
-MODULE user()
+MODULE user
 	VAR
 		state : {idle, request, in_elevator};
 		wants_to : 0..<?= $num_floors-1 ?>;
@@ -42,7 +42,7 @@ MODULE controller
 		e : elevator;
 <?php
 for($i = 0; $i < $num_users; ++$i)
-echo("		u$i : user();\n");
+echo("		u$i : user;\n");
 for($i = 0; $i < $num_floors; ++$i)
 echo("		f$i : floor($i);\n");
 ?>
@@ -206,4 +206,12 @@ for($i = 0; $i < $num_floors; ++$i)
 <?php
 for($i = 0; $i < $num_users; ++$i)
 	echo("		LTLSPEC G c.u$i.state = in_elevator -> O c.u$i.state = request\n");
+?>
+		-- The target only leaves -1 if there has been done a request in the previous state.
+		LTLSPEC G c.e.target != -1 -> Y (c.e.target != -1<?php for($i = 0; $i < $num_users; ++$i) echo " | c.u$i.state = request"; ?>)
+
+		-- The doors have been safe up to now.
+<?php
+for($i = 0; $i < $num_floors; ++$i)
+	echo("		LTLSPEC H !(c.f$i.door_open & c.e.cabin_at != $i)\n");
 ?>
