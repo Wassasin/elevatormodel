@@ -88,12 +88,15 @@ namespace test
 	public:
 		static void execute()
 		{
+			std::vector<size_t> fs = {2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 100};
+		
 			for(size_t n = 1; n <= 5; ++n)
-				for(size_t f = 2; f <= 10; ++f)
+				for(size_t f : fs)
 				{
 					generate_model(n, f);
 					std::cout << "n=" << n << " f=" << f << std::endl;
 					auto result = test("-t /home/wgeraedts/git/elevatormodel/model/elevator_empty.ord tmp.smv");
+					//auto result = test("tmp.smv");
 					
 					if(!result)
 					{
