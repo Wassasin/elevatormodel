@@ -1,0 +1,146 @@
+MODULE elevator
+	VAR
+		cabin_at : 0..3;
+		target : -1..3;
+	ASSIGN
+		init(cabin_at) := 0;
+		init(target) := -1;
+	DEFINE
+		has_target := target != -1;
+		met_target := cabin_at = target;
+		may_change_target := met_target | !has_target;
+		
+MODULE floor(i)
+	VAR
+		door_open : boolean;
+		requested : boolean;
+	ASSIGN
+		init(door_open) := FALSE;
+		init(requested) := FALSE;
+	DEFINE
+		floor := i;
+
+MODULE controller
+	VAR
+		e : elevator;
+		f0 : floor(0);
+		f1 : floor(1);
+		f2 : floor(2);
+		f3 : floor(3);
+	ASSIGN
+
+
+		next(f0.door_open) := case
+			f0.floor = e.target & e.met_target : TRUE;
+			TRUE : FALSE;
+		esac;
+
+		next(f1.door_open) := case
+			f1.floor = e.target & e.met_target : TRUE;
+			TRUE : FALSE;
+		esac;
+
+		next(f2.door_open) := case
+			f2.floor = e.target & e.met_target : TRUE;
+			TRUE : FALSE;
+		esac;
+
+		next(f3.door_open) := case
+			f3.floor = e.target & e.met_target : TRUE;
+			TRUE : FALSE;
+		esac;
+
+
+		next(f0.requested) := case
+			FALSE : {TRUE, FALSE};
+			f0.door_open: FALSE;
+			TRUE : TRUE;
+		esac;
+
+		next(f1.requested) := case
+			FALSE : {TRUE, FALSE};
+			f1.door_open: FALSE;
+			TRUE : TRUE;
+		esac;
+
+		next(f2.requested) := case
+			FALSE : {TRUE, FALSE};
+			f2.door_open: FALSE;
+			TRUE : TRUE;
+		esac;
+
+		next(f3.requested) := case
+			FALSE : {TRUE, FALSE};
+			f3.door_open: FALSE;
+			TRUE : TRUE;
+		esac;
+		
+		next(e.cabin_at) := case
+			may_move & e.has_target & e.target < e.cabin_at : e.cabin_at - 1;
+			may_move & e.has_target & e.target > e.cabin_at : e.cabin_at + 1;
+			TRUE : e.cabin_at;
+		esac;
+		
+		next(e.target) := case
+			!e.may_change_target : e.target;
+			e.target < 0 & f0.requested : 0;
+			e.target < 1 & f1.requested : 1;
+			e.target < 2 & f2.requested : 2;
+			e.target < 3 & f3.requested : 3;
+			f0.requested : 0;
+			f1.requested : 1;
+			f2.requested : 2;
+			f3.requested : 3;
+			no_requests & e.cabin_at != 0 : 0;
+			no_requests & e.cabin_at = 0 : -1;
+			TRUE : e.target;
+		esac;
+
+	DEFINE
+		may_move := (
+			(f0.floor = e.cabin_at -> !f0.door_open) &
+			(f1.floor = e.cabin_at -> !f1.door_open) &
+			(f2.floor = e.cabin_at -> !f2.door_open) &
+			(f3.floor = e.cabin_at -> !f3.door_open)
+		);
+		
+		no_requests := (
+			!f0.requested &
+			!f1.requested &
+			!f2.requested &
+			!f3.requested
+		);
+	
+MODULE main
+	VAR
+		c : controller;
+		-- The doors are safe
+		LTLSPEC G !(c.f0.door_open & c.e.cabin_at != 0)
+		LTLSPEC G !(c.f1.door_open & c.e.cabin_at != 1)
+		LTLSPEC G !(c.f2.door_open & c.e.cabin_at != 2)
+		LTLSPEC G !(c.f3.door_open & c.e.cabin_at != 3)
+		-- A requested floor will be served sometime.
+		LTLSPEC G (c.f0.requested -> F (c.e.cabin_at = 0 & c.f0.door_open))
+		LTLSPEC G (c.f1.requested -> F (c.e.cabin_at = 1 & c.f1.door_open))
+		LTLSPEC G (c.f2.requested -> F (c.e.cabin_at = 2 & c.f2.door_open))
+		LTLSPEC G (c.f3.requested -> F (c.e.cabin_at = 3 & c.f3.door_open))
+		-- Again and again the elevator returns to floor 0.
+		LTLSPEC G F c.e.cabin_at = 0
+		-- Law of nature.
+		LTLSPEC G c.e.cabin_at = 0 -> X (c.e.cabin_at = 0 | c.e.cabin_at = 1)
+		LTLSPEC G c.e.cabin_at = 1 -> X (c.e.cabin_at = 0 | c.e.cabin_at = 1 | c.e.cabin_at = 2)
+		LTLSPEC G c.e.cabin_at = 2 -> X (c.e.cabin_at = 1 | c.e.cabin_at = 2 | c.e.cabin_at = 3)
+		LTLSPEC G c.e.cabin_at = 3 -> X (c.e.cabin_at = 2 | c.e.cabin_at = 3)
+		-- The doors will eventually close
+		LTLSPEC G c.f0.door_open -> F !c.f0.door_open
+		LTLSPEC G c.f1.door_open -> F !c.f1.door_open
+		LTLSPEC G c.f2.door_open -> F !c.f2.door_open
+		LTLSPEC G c.f3.door_open -> F !c.f3.door_open
+		-- The target only leaves -1 if there has been done a request in the previous state.
+		LTLSPEC G c.e.target != -1 -> Y (c.e.target != -1 | c.f0.requested | c.f1.requested | c.f2.requested | c.f3.requested)
+
+		-- The doors have been safe up to now.
+		LTLSPEC H !(c.f0.door_open & c.e.cabin_at != 0)
+		LTLSPEC H !(c.f1.door_open & c.e.cabin_at != 1)
+		LTLSPEC H !(c.f2.door_open & c.e.cabin_at != 2)
+		LTLSPEC H !(c.f3.door_open & c.e.cabin_at != 3)
