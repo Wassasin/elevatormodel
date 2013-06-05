@@ -118,7 +118,8 @@
 		Construct a model of an elevator system that services 4 floors. Your model should contain separate modules for the elevator, the controller, and the users of the elevator.
 	\end{quote}
 	
-	Our NuSMV2 model consists of four modules, which we will explain here. The elevator module contains two variables. \texttt{cabin\_at} is rather self-explanatory, but \texttt{target} can also have the value -1 if no target has been set yet. The module only defines initial values and some macros.
+	\subsection{Realistic model}
+	Our first NuSMV2 model (\texttt{elevator.smv}) consists of four modules, which we will explain here. The elevator module contains two variables. \texttt{cabin\_at} is rather self-explanatory, but \texttt{target} can also have the value -1 if no target has been set yet. The module only defines initial values and some macros.
 	
 	A user starts at a random floor and his goal is also a random floor. By uncommenting \texttt{wants\_to = user\_at \& state = idle : 0..3;}, it is possible to let a user behave in such a way that he continuously wants to go to a new floor. Otherwise, a user remains in the \texttt{idle} state when his goal has been achieved.
 	
@@ -130,13 +131,21 @@
 	
 	Some macros are defined to increase the readability of the model. It can be seen that transition rules often have to be defined for each user or floor seperately. We have not found a way to express this more conveniently, so we ended up with writing a simple script that generates NuSMV models for a variable number of users and floors.
 	
+	\subsection{Model with fairness constraints}
+	It soon becomes difficult to analyze the previous model as the number of floors and users grows. With four users, we can only analyze a system with two floors within minutes. This is why we apply further abstractions. Instead of explicit users that actually travel, we now model them as request buttons that can randomly be pressed (\texttt{elevator\_simple.smv}). These buttons can be seen as both buttons on a floor and buttons within the elevator, as the elevator only services these requests. This makes the model a lot simpler.
+	
+	Fairness constraints are added to exclude paths that only go between for example the first and second floor, ignoring a request on the third floor.
+	
+	\subsection{Model with strategy}
+	We think that these fairness constraints are somewhat questionable. A desired property should follow from the system specifications and should not be explicitly be part of those specifications. This is why we have a third model (\texttt{elevator\_simple\_smart.smv}) in which we implement a simple elevator strategy. The lowest higher floor is now preferred. If there are no requests on higher floors, the lowest requested floor is chosen as the next target. We can confirm that this simple strategy also excludes any unwanted behaviour.
+	
 	\section{Problem 3}
 	
 	\begin{quote}
 		Establish that the model of Problem 2 satisfies the LTL formulae of Problem 1. Are there other relevant correctness properties for the model that can be stated in LTL and that hold for your model?
 	\end{quote}
 	
-	All formulae are indeed satisfied. Some other properties that hold for our model are stated below.
+	All formulae are indeed satisfied in all three of our models. Some other properties that hold for our first model are stated below.
 	
 	\begin{itemize}
 		\item
