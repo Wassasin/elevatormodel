@@ -1,6 +1,6 @@
 <?php
 	error_reporting(E_ALL);
-	if(count($argv) == 3)
+	if(count($argv) == 2)
 		$num_floors = (int)$argv[1];
 	else
 		$num_floors = 4;
