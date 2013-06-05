@@ -209,6 +209,30 @@
 		\caption{Computation time with \texttt{wants\_to}-feature}
 	\end{figure}
 	
+	\begin{figure}[H]
+		\begin{center}
+			\begin{tabular}{r|r|r}
+				\backslashbox{$F$}{$n$} & simple & smart \\ \hline
+				2	& 0.028		& 0.025		\\ \hline
+				3	& 0.030		& 0.027		\\ \hline
+				4	& 0.034		& 0.045		\\ \hline
+				5	& 0.040		& 0.058		\\ \hline
+				6	& 0.051		& 0.092		\\ \hline 
+				7	& 0.059		& 0.126		\\ \hline
+				8	& 0.068		& 0.177		\\ \hline
+				9	& 0.077		& 0.241		\\ \hline
+				10	& 0.090		& 0.335		\\ \hline
+				20	& 0.285		& 6.732		\\ \hline
+				30	& 0.630		& 47.327	\\ \hline
+				40	& 1.214		&		\\ \hline
+				50	& 1.876		&		\\ \hline
+				100	& 8.821		&		\\ \hline
+			\end{tabular}
+		\end{center}
+		
+		\caption{Computation time of simplified models}
+	\end{figure}
+	
 	\section{Problem 5}
 	
 	\begin{quote}
@@ -261,6 +285,31 @@
 		\end{center}
 		
 		\caption{Computation time using \texttt{-t} on empty file with \texttt{wants\_to}-feature}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\begin{center}
+			\begin{tabular}{r|r|r}
+				\backslashbox{$F$}{$n$} & simple & smart \\ \hline
+				2	& 0.019		& 0.026		\\ \hline
+				3	& 0.028		& 0.026		\\ \hline
+				4	& 0.032		& 0.046		\\ \hline
+				5	& 0.043		& 0.056		\\ \hline
+				6	& 0.049		& 0.088		\\ \hline 
+				7	& 0.065		& 0.136		\\ \hline
+				8	& 0.067		& 0.191		\\ \hline
+				9	& 0.083		& 0.263		\\ \hline
+				10	& 0.098		& 0.363		\\ \hline
+				20	& 0.279		& 4.138		\\ \hline
+				30	& 0.722		& 20.980	\\ \hline
+				40	& 1.203		& 71.612	\\ \hline
+				50	& 1.920		&		\\ \hline
+				100	& 9.267		&		\\ \hline
+			\end{tabular}
+		\end{center}
+		
+		\caption{Computation time of simplified models using \texttt{-t} on empty file}
+
 	\end{figure}
 	
 	% Problem 5: variable ordening
