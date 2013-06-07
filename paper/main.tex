@@ -56,7 +56,7 @@
 
 	\section{Introduction}
 
-	In this elaboration of the exercise on NuSMV2 for the Radboud University Nijmegen course ``Analysis of Embedded Systems'' we enumerate our notes and solutions for each problem. Besides this elaboration we have submitted the generated models and templates for these models by e-mail. For problem 4 and 5 we've written an application that measures the executiontime for a specific model in NuSMV. The sources for this application, this report and the models can be found on Github at \url{http://github.com/Wassasin/elevatormodel}.
+	In this elaboration of the exercise on NuSMV2 for the Radboud University Nijmegen course ``Analysis of Embedded Systems'' we enumerate our notes and solutions for each problem. Besides this elaboration we have submitted the generated models and templates for these models by e-mail. For problem 4 and 5 we've written an application that measures the execution time for a specific model in NuSMV. The sources for this application, this report and the models can be found on Github at \url{http://github.com/Wassasin/elevatormodel}.
 	
 	\section{Problem 1}
 	
@@ -127,7 +127,7 @@
 	
 	A user reaches the \texttt{in\_elevator} state when he has requested the elevator and the door at his floor is open. His state returns to \texttt{idle} when he is in the elevator, the cabin is at his goal floor and the door at that floor is open. Finally a user issues a request when he is idle and he wants to go to a different floor than where he currently is. The location of a user changes only when a user is in the elevator. His location is then set to the location of the elevator cabin.
 	
-	Some macros are defined to increase the readability of the model. It can be seen that transition rules often have to be defined for each user or floor seperately. We have not found a way to express this more conveniently, so we ended up with writing a simple script that generates NuSMV models for a variable number of users and floors.
+	Some macros are defined to increase the readability of the model. It can be seen that transition rules often have to be defined for each user or floor separately. We have not found a way to express this more conveniently, so we ended up with writing a simple script that generates NuSMV models for a variable number of users and floors.
 	
 	\subsection{Model with fairness constraints}
 	It soon becomes difficult to analyze the previous model as the number of floors and users grows. With four users, we can only analyze a system with two floors within minutes. This is why we apply further abstractions. Instead of explicit users that actually travel, we now model them as request buttons that can randomly be pressed (\texttt{elevator\_simple.smv}). These buttons can be seen as both buttons on a floor and buttons within the elevator, as the elevator only services these requests. This makes the model a lot simpler.
@@ -174,7 +174,7 @@
 		Explore what happens to the model checking computation times and the size of the model when you increase the number of floors. What is the largest number of floors NuSMV2 can handle?
 	\end{quote}
 	
-	For this analysis we wrote a tool that generates a model for a specific number of floor and users, and measures the executiontime of that model in NuSMV2. If the modelchecker runs for more than 2 minutes, the attempt is terminated. Below we enumerate the executiontime in seconds for each instance of a model.
+	For this analysis we wrote a tool that generates a model for a specific number of floor and users, and measures the execution time of that model in NuSMV2. If the model checker runs for more than 2 minutes, the attempt is terminated. Below we enumerate the execution time in seconds for each instance of a model.
 	
 	Note that this tool also measures the time needed to fork it's process and to start and handle the termination of the NuSMV-process and that the execution of the NuSMV2-process may be pre-empted by the Operating System. Also note that each configuration is only tested once. Thus for models that do not need a lot of time to check (about 100 milliseconds or less), these measurements are not very accurate. 
 	
@@ -343,7 +343,7 @@
 		NuSMV2 also supports past temporal operators. Formulate some correctness properties for the elevator system using these operators and check that they hold for the model.
 	\end{quote}
 	
-	The following properties have all succesfully been verified.
+	The following properties have all successfully been verified.
 	
 	\begin{itemize}
 		\item
