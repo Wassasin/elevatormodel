@@ -27,7 +27,6 @@
 	Wouter Geraedts \\ \small{\texttt{w.geraedts@student.ru.nl}} \and
 	Ko Stoffelen     \\ \small{\texttt{kostoffelen@student.ru.nl}}
 }
-\date{tbd}
 \linespread{1.05}
 
 % Terminology
@@ -375,4 +374,14 @@
 	Anyway, it turns out to be hard to determine a suitable maximum bound. One might argue that all interesting cases have probably been explored when all users have traveled to their destinations. This would result in an upper bound of approximately \((2 \times \textrm{number of floors} + 4) \times \textrm{number of users}\). This roughly describes a worst-case scenario where the elevator has to go all the way up to fetch a user and all the way down to reach his destination. The constant factor is due to the delay in opening of doors and changing of the elevator target.
 	
 	Using this bound, BMC is significantly slower, although of course the algorithm can stop earlier once it has found a counterexample for some property. It is exactly as has been stated before: BMC can be useful if one is looking for counterexamples in settings with lots of users and floors, but for exhaustive search a BDD is the better choice.
+	
+	\section{Reflection}
+
+	\begin{quote}
+	Did you find your efforts to formally model and reason about this system useful? Did it help you to gain additional insight in the temporal logic and model checking? If so, what did you learn? What was the most difficult part of this assignment? What was your experience with using NuSMV2 (when compared, for instance, to Uppaal)?
+	\end{quote}
+
+	A system like this elevator system always appears almost trivial, until you start to formally model it and proof its correctness. For real systems it is always useful to do such a thing, although it will cost time. We found it nice to use something else than Uppaal for a change, although NuSMV2 did not really give us extra insight in temporal logic and model checking. Problem 5 and 7 did, though, and it is nice that NuSMV2 is more flexible in the model checking itself. However, we still would prefer Uppaal because of its expressivity in modeling. The NuSMV2 modeling language is very limited and feels somewhat clumsy.
+
+	We think that this assignment went rather well. The most difficult part was either managing all test cases or constructing meaningful properties with past temporal operators.
 \end{document}
