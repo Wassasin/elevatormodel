@@ -56,8 +56,7 @@
 
 	\section{Introduction}
 
-	% Baier & katoen 5.5
-	% LTL
+	In this elaboration of the exercise on NuSMV2 for the Radboud University Nijmegen course ``Analysis of Embedded Systems'' we enumerate our notes and solutions for each problem. Besides this elaboration we have submitted the generated models and templates for these models by e-mail. For problem 4 and 5 we've written an application that measures the executiontime for a specific model in NuSMV. The sources for this application, this report and the models can be found on Github at \url{http://github.com/Wassasin/elevatormodel}.
 	
 	\section{Problem 1}
 	
@@ -136,7 +135,7 @@
 	Fairness constraints are added to exclude paths that only go between for example the first and second floor, ignoring a request on the third floor.
 	
 	\subsection{Model with strategy}
-	We think that these fairness constraints are somewhat questionable. A desired property should follow from the system specifications and should not be explicitly be part of those specifications. This is why we have a third model (\texttt{elevator\_simple\_smart.smv}) in which we implement a simple elevator strategy. The lowest higher floor is now preferred. If there are no requests on higher floors, the lowest requested floor is chosen as the next target. We can confirm that this simple strategy also excludes any unwanted behaviour.
+	We think that these fairness constraints are somewhat questionable. A desired property should follow from the system specifications and should not be explicitly be part of those specifications. This is why we have a third model (\texttt{elevator\_simple\_smart.smv}) in which we implement a specific simple elevator strategy: the lowest higher floor is now preferred. If there are no requests on higher floors, the lowest requested floor is chosen as the next target. We can confirm that this simple strategy also excludes any unwanted behaviour.
 	
 	\section{Problem 3}
 	
@@ -174,6 +173,10 @@
 	\begin{quote}
 		Explore what happens to the model checking computation times and the size of the model when you increase the number of floors. What is the largest number of floors NuSMV2 can handle?
 	\end{quote}
+	
+	For this analysis we wrote a tool that generates a model for a specific number of floor and users, and measures the executiontime of that model in NuSMV2. If the modelchecker runs for more than 2 minutes, the attempt is terminated. Below we enumerate the executiontime in seconds for each instance of a model.
+	
+	Note that this tool also measures the time needed to fork it's process and to start and handle the termination of the NuSMV-process and that the execution of the NuSMV2-process may be pre-empted by the Operating System. Also note that each configuration is only tested once. Thus for models that do not need a lot of time to check (about 100 milliseconds or less), these measurements are not very accurate. 
 	
 	\begin{figure}[H]
 		\begin{center}
@@ -220,7 +223,7 @@
 	\begin{figure}[H]
 		\begin{center}
 			\begin{tabular}{r|r|r}
-				\backslashbox{$F$}{$n$} & simple & smart \\ \hline
+				\backslashbox{$F$}{$n$} & simple & simple\_smart \\ \hline
 				2	& 0.028		& 0.025		\\ \hline
 				3	& 0.030		& 0.027		\\ \hline
 				4	& 0.034		& 0.045		\\ \hline
@@ -241,6 +244,8 @@
 		\caption{Computation time of simplified models}
 	\end{figure}
 	
+	Thus for the realistic model, with 2 users only 3 floors can be checked within 2 minutes. For the simple model, the elevator with more than 100 floors can be checked in the same time. The \texttt{simple\_smart} model can be checked for 30 floors.
+	
 	\section{Problem 5}
 	
 	\begin{quote}
@@ -252,6 +257,8 @@
 	In general we conclude that it is better to branch first on variables with a greater domain (more branches) and that play a more dominant role with regard to the system behaviour. The behaviour of a floor door for example, directly follows from other variables and it does not influence others. It can also attain only two values. This results in a low place in the optimal ordering. The elevator target however, can take five values and it influences the location of the elevator and of users in the elevator.
 	
 	Something remarkable we found out is that supplying an empty file with the \texttt{-i} option results in a running time of about 3.5 seconds and a variable ordering that does not really make a lot of sense. It looks somewhat systematically generated, but not entirely. An outright weird thing is that supplying an empty file with the \texttt{-t} option, which determines the variable ordering for clustering, always significantly speeds up the tool. By using this `hack', we were able to validate our properties in settings with lots of floors, where it would otherwise have taken hours.
+	
+	To illustrate this, we have repeated the measurements we've one for Problem 4, but with the \texttt{-t} option on an empty file. We have summarized the results below:
 	
 	\begin{figure}[H]
 		\begin{center}
@@ -298,7 +305,7 @@
 	\begin{figure}[H]
 		\begin{center}
 			\begin{tabular}{r|r|r}
-				\backslashbox{$F$}{$n$} & simple & smart \\ \hline
+				\backslashbox{$F$}{$n$} & simple & simple\_smart \\ \hline
 				2	& 0.019		& 0.026		\\ \hline
 				3	& 0.028		& 0.026		\\ \hline
 				4	& 0.032		& 0.046		\\ \hline
