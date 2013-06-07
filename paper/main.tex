@@ -56,7 +56,7 @@
 
 	\section{Introduction}
 
-	In this elaboration of the exercise on NuSMV2 for the Radboud University Nijmegen course ``Analysis of Embedded Systems'' we enumerate our notes and solutions for each problem. Besides this elaboration we have submitted the generated models and templates for these models by e-mail. For problem 4 and 5 we've written an application that measures the execution time for a specific model in NuSMV. The sources for this application, this report and the models can be found on Github at \url{http://github.com/Wassasin/elevatormodel}.
+	In this elaboration of the exercise on NuSMV2 for the Radboud University Nijmegen course ``Analysis of Embedded Systems'', we enumerate our notes and solutions for each problem. Besides this elaboration we have submitted the generated models and templates for these models by e-mail. For problem four and five we have written an application that measures the execution time for a specific model in NuSMV. The sources for this application, this report and the models can be found on Github at \url{http://github.com/Wassasin/elevatormodel}.
 	
 	\section{Problem 1}
 	
@@ -119,7 +119,7 @@
 	\subsection{Realistic model}
 	Our first NuSMV2 model (\texttt{elevator.smv}) consists of four modules, which we will explain here. The elevator module contains two variables. \texttt{cabin\_at} is rather self-explanatory, but \texttt{target} can also have the value -1 if no target has been set yet. The module only defines initial values and some macros.
 	
-	A user starts at a random floor and his goal is also a random floor. By uncommenting \texttt{wants\_to = user\_at \& state = idle : 0..3;}, it is possible to let a user behave in such a way that he continuously wants to go to a new floor. Otherwise, a user remains in the \texttt{idle} state when his goal has been achieved.
+	A user starts at a random floor and his goal is also a random floor. By uncommenting \texttt{wants\_to = user\_at \& state = idle : 0..3;}, it is possible to let a user behave in such a way that he continuously wants to go to a new floor. From now on, we refer to this as the \texttt{wants\_to} feature. Otherwise, a user remains in the \texttt{idle} state when his goal has been achieved.
 	
 	The floor module models a floor door. The elevator itself does not have a door. A floor door is modeled as a single boolean variable.
 	
@@ -174,9 +174,9 @@
 		Explore what happens to the model checking computation times and the size of the model when you increase the number of floors. What is the largest number of floors NuSMV2 can handle?
 	\end{quote}
 	
-	For this analysis we wrote a tool that generates a model for a specific number of floor and users, and measures the execution time of that model in NuSMV2. If the model checker runs for more than 2 minutes, the attempt is terminated. Below we enumerate the execution time in seconds for each instance of a model.
+	For this analysis we wrote a tool that generates a model for a specific number of floors and users, and measures the execution time of NuSMV2 verifying all properties above for the generated model. If the model checker runs for more than two minutes, the attempt is terminated. Below we enumerate the execution time in seconds for each instance of a model.
 	
-	Note that this tool also measures the time needed to fork it's process and to start and handle the termination of the NuSMV-process and that the execution of the NuSMV2-process may be pre-empted by the Operating System. Also note that each configuration is only tested once. Thus for models that do not need a lot of time to check (about 100 milliseconds or less), these measurements are not very accurate. 
+	Note that this tool also measures the time needed to fork its process and to start and handle the termination of the NuSMV-process and that the execution of the NuSMV2-process may be pre-empted by the operating system. Also note that each configuration is only tested once. Thus for models that do not need a lot of time to check (about 100 milliseconds or less), these measurements are not very accurate. 
 	
 	\begin{figure}[H]
 		\begin{center}
@@ -198,7 +198,7 @@
 			\end{tabular}
 		\end{center}
 		
-		\caption{Computation time without \texttt{wants\_to}-feature}
+		\caption{Computation time without \texttt{wants\_to} feature}
 	\end{figure}
 	
 	\begin{figure}[H]
@@ -217,7 +217,7 @@
 			\end{tabular}
 		\end{center}
 		
-		\caption{Computation time with \texttt{wants\_to}-feature}
+		\caption{Computation time with \texttt{wants\_to} feature}
 	\end{figure}
 	
 	\begin{figure}[H]
@@ -244,7 +244,7 @@
 		\caption{Computation time of simplified models}
 	\end{figure}
 	
-	Thus for the realistic model, with 2 users only 3 floors can be checked within 2 minutes. For the simple model, the elevator with more than 100 floors can be checked in the same time. The \texttt{simple\_smart} model can be checked for 30 floors.
+	Thus for the realistic model, only two users and three floors can be verified within three minutes. For the simple model, the elevator with more than 100 floors can be checked in the same time. The \texttt{simple\_smart} model can be checked for 30 floors.
 	
 	\section{Problem 5}
 	
@@ -258,7 +258,7 @@
 	
 	Something remarkable we found out is that supplying an empty file with the \texttt{-i} option results in a running time of about 3.5 seconds and a variable ordering that does not really make a lot of sense. It looks somewhat systematically generated, but not entirely. An outright weird thing is that supplying an empty file with the \texttt{-t} option, which determines the variable ordering for clustering, always significantly speeds up the tool. By using this `hack', we were able to validate our properties in settings with lots of floors, where it would otherwise have taken hours.
 	
-	To illustrate this, we have repeated the measurements we've one for Problem 4, but with the \texttt{-t} option on an empty file. We have summarized the results below:
+	To illustrate this, we have repeated the measurements we have done for Problem 4, but with the \texttt{-t} option on an empty file. We have summarized the results below:
 	
 	\begin{figure}[H]
 		\begin{center}
@@ -280,7 +280,7 @@
 			\end{tabular}
 		\end{center}
 		
-		\caption{Computation time using \texttt{-t} on empty file without \texttt{wants\_to}-feature}
+		\caption{Computation time using \texttt{-t} on empty file without \texttt{wants\_to} feature}
 	\end{figure}
 	
 	\begin{figure}[H]
@@ -299,7 +299,7 @@
 			\end{tabular}
 		\end{center}
 		
-		\caption{Computation time using \texttt{-t} on empty file with \texttt{wants\_to}-feature}
+		\caption{Computation time using \texttt{-t} on empty file with \texttt{wants\_to} feature}
 	\end{figure}
 	
 	\begin{figure}[H]
@@ -343,7 +343,7 @@
 		NuSMV2 also supports past temporal operators. Formulate some correctness properties for the elevator system using these operators and check that they hold for the model.
 	\end{quote}
 	
-	The following properties have all successfully been verified.
+	The following properties have all successfully been verified in our models.
 	
 	\begin{itemize}
 		\item
